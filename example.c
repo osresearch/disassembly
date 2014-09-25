@@ -30,6 +30,7 @@ int my_strlen(char * c)
 
 struct list
 {
+	int (*function)(int arg);
 	struct list * next;
 };
 
@@ -41,4 +42,10 @@ end_of_list(
 	while(l->next)
 		l = l->next;
 	return l;
+}
+
+int call_last_function(struct list * l, int arg)
+{
+	l = end_of_list(l);
+	return l->function(arg);
 }
