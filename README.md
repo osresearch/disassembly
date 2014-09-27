@@ -54,7 +54,7 @@ on the architecture these might be named ("ax", "bx") or numbered
 | Arch | Width | General Purpose Registers | Special Registers |
 |------|-------|---------------------------|-------------------|
 | i386 | 8, 16 and 32 |ax, bx, cx, dx, si, di | eip, sp, bp, ds, cs, etc |
-| x86-64 | 64-bit | rax, rbx, rcx, rdx, rsi, rdi, r8-r15 | rip, ... |
+| x86-64 | 64-bit | rax, rbx, rcx, rdx, rsi, rdi, r8-r15 | rip, rbp, rsp,... |
 | ARM | 32-bit | r0-r15 | r15 is the pc, r14 is the lr, r13 is the sp |
 
 Some registers are special, such as the Program Counter (PC, arm)
@@ -63,10 +63,6 @@ instruction being executed and is incremented after each instruction,
 or can be modified by a branch instruction.  On the ARM and x86-64
 it can be treated as a normal register, but other architectures
 can only modify it via special instructions.
-
-	MOV %rax, 0x1000
-	MOV %rbx, 0x0100
-	ADD %rcx, %rax, %rbx
 
 For the most part we will ignore the legacy cruft of i386 --
 there are segment registers, descriptor tables, call gates and
@@ -271,6 +267,22 @@ But with `gcc -O3` it becomes much more complex:
 	decq	%rdx
 	jne	0x60
 	retq
+
+
+Limitations of disasssemblers
+===
+The "decompilers" in Hopper and IDA Pro are pretty good, but they
+are not perfect.  They are doing a difficult job of trying to
+figure out what the compiler was thinking and take advantage of
+the fact that most compilers use a similar set of transforms and
+adhere to the ABI, but inlining, loop unrolling, vectorization,
+whole-program-optimization, dead code elimination, constant folding
+and other techniques can be hard or impossible to undo.
+
+Any code that works with special registers or instructions will
+probably not decompile well. Atomics, for instance, or Intel
+legacy cruft like `LGDT` will be ignored.
+
 
 Challenge
 ===
