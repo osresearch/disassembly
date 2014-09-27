@@ -1,3 +1,29 @@
+ ____                              
+|  _ \ _____   _____ _ __ ___  ___ 
+| |_) / _ \ \ / / _ \ '__/ __|/ _ \
+|  _ <  __/\ V /  __/ |  \__ \  __/
+|_| \_\___| \_/ \___|_|  |___/\___|
+
+                 _____             _                      _             
+                | ____|_ __   __ _(_)_ __   ___  ___ _ __(_)_ __   __ _ 
+                |  _| | '_ \ / _` | | '_ \ / _ \/ _ \ '__| | '_ \ / _` |
+                | |___| | | | (_| | | | | |  __/  __/ |  | | | | | (_| |
+                |_____|_| |_|\__, |_|_| |_|\___|\___|_|  |_|_| |_|\__, |
+                             |___/                                |___/ 
+
+Trammell Hudson <hudson@trmm.net>
+
+http://bit.ly/reverseengineering
+
+
+
+
+
+
+
+
+
+
 Disassembly
 ===
 The really old way to disassemble a program is to hex dump it and walk
@@ -80,15 +106,16 @@ control is transfered since it is just processing numbers.
 Additionally, compilers are free to do whatever they want inside of
 functions or for ones that aren't visible to others.
 
-| Arg | i386 (fastcall) | x86-64 Linux | x86-64 Win | ARM |
-|-----|------|--------------|------------|-----|
-| Return | %eax | %rax | %rax | %r0 |
-| 0   | %ecx | %rdi | %rcx | %r1 |
-| 1   | %edx | %rsi | %rdx | %r2 |
-| 2   | sp[0x00] | %rdx | %r8 | %r3 |
-| 3   | sp[0x04] | %rcx | %r9 | sp[0x00] |
-| 4   | sp[0x08] | %r8 | sp[0x00] | sp[0x04] |
-| 5   | sp[0x0C] | %r9 | sp[0x08 | sp[0x08] |
+| Arg | i386     | x86-64   | x86-64   | ARM      |
+|     | Fastcall | Linux    | Windows  |          |
+|-----|----------|----------|----------|----------|
+| Ret | %eax     | %rax     | %rax     | %r0      |
+| 0   | %ecx     | %rdi     | %rcx     | %r1      |
+| 1   | %edx     | %rsi     | %rdx     | %r2      |
+| 2   | sp[0x00] | %rdx     | %r8      | %r3      |
+| 3   | sp[0x04] | %rcx     | %r9      | sp[0x00] |
+| 4   | sp[0x08] | %r8      | sp[0x00] | sp[0x04] |
+| 5   | sp[0x0C] | %r9      | sp[0x08] | sp[0x08] |
 | 6   | sp[0x10] | sp[0x00] | sp[0x10] | sp[0x0c] |
 | 7   | sp[0x14] | sp[0x08] | sp[0x18] | sp[0x10] |
 
@@ -142,9 +169,15 @@ necessary for computers to function.  They can't handle the GOTO!
 
 Branch instructions come in a few varieties:
 
-* absolute, relative or indirect: is the destination address an actual address, relative to the current address or read from a register?
-* unconditional or conditional: should the branch always be taken, or does it depend on a predicate?
-* normal or linked: on x86, `CALL` will push the return address onto the stack.  On ARM, `BL` will move the return address into the link register `%r14`.
+* absolute, relative or indirect: is the destination address an
+actual address, relative to the current address or read from a register?
+
+* unconditional or conditional: should the branch always be taken,
+or does it depend on a predicate?
+
+* normal or linked: on x86, `CALL` will push the return address onto
+the stack.  On ARM, `BL` will move the return address into the link
+register `%r14`.
 
 
 Arrays
@@ -269,13 +302,13 @@ constants that are giveaways when you find them in the binaries.
 The length can also be useful to figure what sort of checksum is
 in use, since MD5 and SHA1 share some values.
 
-| Length in bits | Likely algorithm | Constants |
-|----------------|------------------|-----------|
-| 8 or 16 | Simple sum, maybe 1's complement | ? |
-| 32      | crc32 | 0x77073096 0xEE0E612C |
-| 64      | MD5 | 0xd76aa478 0xe8c7b756 |
-| 160     | SHA1 | 0x5A827999 0x6ED9EBA1 |
-| 256     | SHA256 | 0x428a2f98 0x71374491 |
+| Bits    | Algorithm  | Constants             |
+|---------|------------|-----------------------|
+| 8 or 16 | Simple sum | maybe 1's complement  |
+| 32      | crc32      | 0x77073096 0xEE0E612C |
+| 64      | MD5        | 0xd76aa478 0xe8c7b756 |
+| 160     | SHA1       | 0x5A827999 0x6ED9EBA1 |
+| 256     | SHA256     | 0x428a2f98 0x71374491 |
 
 
 Linked lists
