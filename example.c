@@ -49,3 +49,10 @@ int call_last_function(struct list * l, int arg)
 	l = end_of_list(l);
 	return l->function(arg);
 }
+
+
+int function_call(void)
+{
+	extern int args();
+	return args(0,2,3,4,5,6,7,8,9,10);
+}
