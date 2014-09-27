@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <zlib.h>
 
 #define USED __attribute__((__used__)) __attribute__((__noinline__))
 
@@ -101,7 +102,8 @@ USED
 const char *
 file_read(
 	struct fops_t * f,
-	const char * name
+	const char * name,
+	size_t * len_out
 )
 {
 	if (f->open(f, name, 0) < 0)
@@ -113,6 +115,7 @@ file_read(
 	ssize_t len = f->stat(f);
 	if (len < 0)
 		goto fail_stat;
+	*len_out = len;
 
 	char * buf = malloc(len);
 	if (!buf)
@@ -138,6 +141,22 @@ fail_stat:
 	f->close(f);
 fail_open:
 	return NULL;
+}
+
+
+USED
+int checksum(const char * filename)
+{
+	size_t len;
+	const char * buf = file_read(NULL, filename, &len);
+
+	uint32_t crc = crc32(0L, Z_NULL, 0);
+	uint32_t old_crc = *(uint32_t*) buf;
+	if (old_crc == crc32(crc, (const uint8_t*) buf+4, len - 4))
+		return 0;
+
+	printf("%s: bad file!\n", filename);
+	return -1;
 }
 
 
