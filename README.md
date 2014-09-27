@@ -11,9 +11,17 @@
                 |_____|_| |_|\__, |_|_| |_|\___|\___|_|  |_|_| |_|\__, |
                              |___/                                |___/ 
 
-Trammell Hudson <hudson@trmm.net>
+                                       Trammell Hudson <hudson@trmm.net>
 
-http://bit.ly/reverseengineering
+Hopper:
+	http://hopperapp.com/download.html
+
+Sample program:
+	https://github.com/osresearch/disassembly/blob/master/example
+
+This document:
+	http://bit.ly/reverseengineering
+
 
 
 
