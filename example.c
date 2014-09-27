@@ -1,9 +1,21 @@
-// show some different constructions
+/*
+ * Show some common programming constructions.
+ *
+ * This is not intended as a program to be run, but instead as something
+ * to be disassembled and analyzed by students in the Intro to Reverse
+ * Engineering class.  Don't look here for examples of good code
+ * or even workable code!
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
 #include <zlib.h>
 
+/*
+ * Force gcc to include all these functions and to not inline them
+ * so that we can be sure that they are actually in the executable
+ * image.
+ */
 #define USED __attribute__((__used__)) __attribute__((__noinline__))
 
 USED
@@ -57,6 +69,17 @@ struct list
 	int (*function)(int arg);
 	struct list * next;
 };
+
+USED
+void
+insert_after(
+	struct list * l1,
+	struct list * l2
+)
+{
+	l2->next = l1->next;
+	l1->next = l2;
+}
 
 USED
 struct list *
@@ -145,7 +168,7 @@ fail_open:
 
 
 USED
-int checksum(const char * filename)
+long checksum(const char * filename)
 {
 	size_t len;
 	const char * buf = file_read(NULL, filename, &len);
@@ -156,7 +179,7 @@ int checksum(const char * filename)
 		return 0;
 
 	printf("%s: bad file!\n", filename);
-	return -1;
+	return -0xBAD;
 }
 
 

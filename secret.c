@@ -2,15 +2,19 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-int compare1(const char * s)
+int debug = 0;
+
+long compare1(const char * s)
 {
 	static const char secret[] = "tfufdbtuspopnz";
 	for (size_t i = 0 ; i < sizeof(secret)-1 ; i++)
 	{
-		char c = *s++;
-		//printf("%zu: '%c' '%c'\n", i, c, secret[i]-1);
-		if (c != secret[i]-1)
-			return -1;
+		char c1 = *s++;
+		char c2 = secret[i] - 1;
+		if (debug)
+			printf("%zu: '%c' '%c'\n", i, c1, c2);
+		if (c1 != c2)
+			return -0xF00D;
 	}
 
 	return 0;
