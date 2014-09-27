@@ -1,3 +1,29 @@
+Disassembly
+===
+The really old way to disassemble a program is to hex dump it and walk
+through the processor datasheet to decode the instructions:
+
+    0001540: 55 48 89 e5 89 7d fc 89 75 f8 8b 75 fc 03 75 f8  UH...}..u..u..u.
+
+    55 == 0x50 == push, 0x05 == %rbp => push %rbp
+    48 89 E5
+    01001000 10001001 11100101
+    REX.W    MOV          %BP
+
+This is far too much work!  Instead we have tools to help us, like
+`obdjump -d` on Linux and `otool` on OS X:
+
+    % otool -tV example | head
+    0000000100001540	pushq	%rbp
+    0000000100001541	movq	%rsp, %rbp
+
+But even this is not as useful as it could be -- if the binary is
+stripped there are no function names to help with the decoding
+and not even antyhing to mark where functions begin.  Thus the
+desire for an interactive tool to assist us in understanding
+these programs.
+
+
 Reverse engineering examples
 ===
 
@@ -9,7 +35,7 @@ The ease of reading the assemnbly varies with the optimization level.
 functions that you might not expect.
 
 For clarify the base pointer can be omitted since it doesn't need to
-be present. `-momit-leaf-base-pointer` can be specified.
+be present. `-momit-leaf-frame-pointer` can be specified.
 
 
 Machine model
@@ -177,3 +203,76 @@ Traversing linked lists shows up fairly frequently and is often inlined,
 so it is worth looking at this pattern.
 
 
+Optimizations
+===
+A compiler that does no optimizations can be hard to follow in the
+disassembly since it will make lots of random copies of things that
+serve no purpose.  A compiler with too much optimization can be hard
+to folow since it will use tricks like SSE and loop unrolling.
+
+These examples were built with `-O1`, which keeps them fairly
+simple.  For instance, this simple memory copy routine:
+
+    void my_memcpy(uint8_t * d, const uint8_t * s, size_t n)
+    {
+        for (size_t i = 0 ; i < n ; i++)
+                d[i] = s[i];
+    }
+
+With `gcc -O1` it is what you might expect:
+
+    testq	%rdx, %rdx
+    je	0x1f
+    nopw	%cs:_my_memcpy(%rax,%rax)
+    movb	_my_memcpy(%rsi), %al
+    movb	%al, _my_memcpy(%rdi)
+    incq	%rsi
+    incq	%rdi
+    decq	%rdx
+    jne	0x10
+    retq
+
+But with `gcc -O3` it becomes much more complex:
+
+	testq	%rdx, %rdx
+	je	0x6f
+	xorl	%ecx, %ecx
+	movq	%rdx, %rax
+	andq	$-0x20, %rax
+	je	0x4e
+	leaq	-0x1(%rdx), %r8
+	leaq	_my_memcpy(%rsi,%r8), %r9
+	xorl	%ecx, %ecx
+	cmpq	%rdi, %r9
+	jb	0x27
+	addq	%rdi, %r8
+	cmpq	%rsi, %r8
+	jae	0x4e
+	xorl	%ecx, %ecx
+	nopl	_my_memcpy(%rax)
+	movups	_my_memcpy(%rsi,%rcx), %xmm0
+	movups	0x10(%rsi,%rcx), %xmm1
+	movups	%xmm0, _my_memcpy(%rdi,%rcx)
+	movups	%xmm1, 0x10(%rdi,%rcx)
+	addq	$0x20, %rcx
+	cmpq	%rcx, %rax
+	jne	0x30
+	movq	%rax, %rcx
+	cmpq	%rdx, %rcx
+	je	0x6f
+	addq	%rcx, %rsi
+	addq	%rcx, %rdi
+	subq	%rcx, %rdx
+	nopl	_my_memcpy(%rax)
+	movb	_my_memcpy(%rsi), %al
+	movb	%al, _my_memcpy(%rdi)
+	incq	%rsi
+	incq	%rdi
+	decq	%rdx
+	jne	0x60
+	retq
+
+Challenge
+===
+As a small challenge, can you figure out how to get this program to
+accept your input and determine what secret message it prints?
