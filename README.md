@@ -150,7 +150,19 @@ Branch instructions come in a few varieties:
 Arrays
 ---
 
-Arrays are just pointers plus offsets.
+Arrays are just pointers plus offsets.  Most of the time you will
+see them used with a offset addressing mode -- the function will
+take the base pointer of the array as an argument and then do
+operations that walk along an array like
+
+		MOV %rax, 0
+		MOV %rdi, 0
+	LOOP:
+		ADD %rax, [%rdx + %rdi]
+		ADD %rdi, 4
+		DEC %rcx
+		JNE LOOP
+
 
 Common patterns
 ===
@@ -268,9 +280,28 @@ But with `gcc -O3` it becomes much more complex:
 	jne	0x60
 	retq
 
-
-Limitations of disasssemblers
+Interactive dissassembly
 ===
+
+Most useful features:
+* Finding function boundaries
+* `p`: Marking something as a function
+* `n`: Naming functions and addresses
+* `x`: Showing cross references -- what calls this?
+* `d`: Change data type: 8, 16, 32, or 64 bytes
+* '-': Signed/unsigned: turn large constants into their negative values
+* 'a': Mark something as an ASCII string
+* 'A': Mark something as a Unicode string
+* 'u': Mark something as unexplored
+* `Space`: Show control flow graph
+* `Alt-Enter`: "Decompile"
+
+*Caution* -- i386 instructions can start on arbitrary boundaries,
+so the "Find next function" is not guaranteed to work and might find
+another instruction.
+
+Limitations
+---
 The "decompilers" in Hopper and IDA Pro are pretty good, but they
 are not perfect.  They are doing a difficult job of trying to
 figure out what the compiler was thinking and take advantage of
@@ -282,6 +313,11 @@ and other techniques can be hard or impossible to undo.
 Any code that works with special registers or instructions will
 probably not decompile well. Atomics, for instance, or Intel
 legacy cruft like `LGDT` will be ignored.
+
+There is also signifcant amounts of line noise around `SIGNEXTEND`
+and `LOWBYTE` calls since the decompiler doesn't know which are
+important to the code, but wants to be sure that you know when
+only partial registers are being considered.
 
 Other tools
 ===
@@ -306,6 +342,11 @@ from `file.raw` into `file.exe` you can use a combination of the block size,
 skip and count options:
 
 	dd if=file.raw bs=1 skip=$[0x40000] count=$[0x1000] of=file.part
+
+`nm` for dumping symbols.
+
+`file` for attempting to analyze what something is.  If it says `data`, then
+you'll need to do more digging.
 
 `objdump` / `otool` for doing quick disassemblies.
 
