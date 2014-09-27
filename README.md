@@ -164,6 +164,79 @@ operations that walk along an array like
 		JNE LOOP
 
 
+Interactive dissassembly
+===
+
+Most useful features:
+* Finding function boundaries
+* `p`: Marking something as a function
+* `n`: Naming functions and addresses
+* `x`: Showing cross references -- what calls this?
+* `d`: Change data type: 8, 16, 32, or 64 bytes
+* '-': Signed/unsigned: turn large constants into their negative values
+* 'a': Mark something as an ASCII string
+* 'A': Mark something as a Unicode string
+* 'u': Mark something as unexplored
+* `Space`: Show control flow graph
+* `Alt-Enter`: "Decompile"
+
+*Caution* -- i386 instructions can start on arbitrary boundaries,
+so the "Find next function" is not guaranteed to work and might find
+another instruction.
+
+Limitations
+---
+The "decompilers" in Hopper and IDA Pro are pretty good, but they
+are not perfect.  They are doing a difficult job of trying to
+figure out what the compiler was thinking and take advantage of
+the fact that most compilers use a similar set of transforms and
+adhere to the ABI, but inlining, loop unrolling, vectorization,
+whole-program-optimization, dead code elimination, constant folding
+and other techniques can be hard or impossible to undo.
+
+Any code that works with special registers or instructions will
+probably not decompile well. Atomics, for instance, or Intel
+legacy cruft like `LGDT` will be ignored.
+
+There is also signifcant amounts of line noise around `SIGNEXTEND`
+and `LOWBYTE` calls since the decompiler doesn't know which are
+important to the code, but wants to be sure that you know when
+only partial registers are being considered.
+
+Other tools
+===
+
+`strings` is incredibly useful for initial exploration.  The `-x` option
+will print the hex offset of the strings so that you can find it in
+your disassembler and hopefully find the cross references that use it.
+With the GNU version you can also search for Unicode strings:
+
+	strings -t x -e l file.raw
+
+`xxd` is an all purpose hex dumper.  Again, very useful for initial
+exploration to get a feel for what is in the file.  By default is
+uses 16-bit words, but most often single bytes is better.
+
+	xxd -g 1 file.raw | less
+
+`dd` can be used to transform large files into smaller ones.  Frequently
+ROM dumps will have portions that are copied to different memory locations
+or that you want to analyze individually.  To read the 64K at offset 0x40000
+from `file.raw` into `file.exe` you can use a combination of the block size,
+skip and count options:
+
+	dd if=file.raw bs=1 skip=$[0x40000] count=$[0x1000] of=file.part
+
+`nm` for dumping symbols.
+
+`file` for attempting to analyze what something is.  If it says `data`, then
+you'll need to do more digging.
+
+`objdump` / `otool` for doing quick disassemblies.
+
+`objcopy` to convert a raw firmware dump into an ELF for easier analysis.
+
+
 Common patterns
 ===
 
@@ -279,78 +352,6 @@ But with `gcc -O3` it becomes much more complex:
 	decq	%rdx
 	jne	0x60
 	retq
-
-Interactive dissassembly
-===
-
-Most useful features:
-* Finding function boundaries
-* `p`: Marking something as a function
-* `n`: Naming functions and addresses
-* `x`: Showing cross references -- what calls this?
-* `d`: Change data type: 8, 16, 32, or 64 bytes
-* '-': Signed/unsigned: turn large constants into their negative values
-* 'a': Mark something as an ASCII string
-* 'A': Mark something as a Unicode string
-* 'u': Mark something as unexplored
-* `Space`: Show control flow graph
-* `Alt-Enter`: "Decompile"
-
-*Caution* -- i386 instructions can start on arbitrary boundaries,
-so the "Find next function" is not guaranteed to work and might find
-another instruction.
-
-Limitations
----
-The "decompilers" in Hopper and IDA Pro are pretty good, but they
-are not perfect.  They are doing a difficult job of trying to
-figure out what the compiler was thinking and take advantage of
-the fact that most compilers use a similar set of transforms and
-adhere to the ABI, but inlining, loop unrolling, vectorization,
-whole-program-optimization, dead code elimination, constant folding
-and other techniques can be hard or impossible to undo.
-
-Any code that works with special registers or instructions will
-probably not decompile well. Atomics, for instance, or Intel
-legacy cruft like `LGDT` will be ignored.
-
-There is also signifcant amounts of line noise around `SIGNEXTEND`
-and `LOWBYTE` calls since the decompiler doesn't know which are
-important to the code, but wants to be sure that you know when
-only partial registers are being considered.
-
-Other tools
-===
-
-`strings` is incredibly useful for initial exploration.  The `-x` option
-will print the hex offset of the strings so that you can find it in
-your disassembler and hopefully find the cross references that use it.
-With the GNU version you can also search for Unicode strings:
-
-	strings -t x -e l file.raw
-
-`xxd` is an all purpose hex dumper.  Again, very useful for initial
-exploration to get a feel for what is in the file.  By default is
-uses 16-bit words, but most often single bytes is better.
-
-	xxd -g 1 file.raw | less
-
-`dd` can be used to transform large files into smaller ones.  Frequently
-ROM dumps will have portions that are copied to different memory locations
-or that you want to analyze individually.  To read the 64K at offset 0x40000
-from `file.raw` into `file.exe` you can use a combination of the block size,
-skip and count options:
-
-	dd if=file.raw bs=1 skip=$[0x40000] count=$[0x1000] of=file.part
-
-`nm` for dumping symbols.
-
-`file` for attempting to analyze what something is.  If it says `data`, then
-you'll need to do more digging.
-
-`objdump` / `otool` for doing quick disassemblies.
-
-`objcopy` to convert a raw firmware dump into an ELF for easier analysis.
 
 
 Challenge
