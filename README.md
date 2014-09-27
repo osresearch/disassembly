@@ -397,8 +397,14 @@ But with `gcc -O3` it becomes much more complex:
 
 Challenge
 ===
-https://github.com/osresearch/disassembly/blob/master/sample
+https://github.com/osresearch/disassembly/blob/master/secret
 
 As a small challenge, can you figure out how to get this program to
 accept your input and determine what secret message it prints?
+
+
+
+
+
+
 

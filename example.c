@@ -182,6 +182,29 @@ long checksum(const char * filename)
 	return -0xBAD;
 }
 
+USED
+int divide_by_ten(int a)
+{
+	return a / 10;
+}
+
+USED
+int divide_by_b(int a, int b)
+{
+	return a / b;
+}
+
+USED
+int divide_by_16(unsigned a)
+{
+	return a / 16;
+}
+
+USED
+int mult_by_32(unsigned a)
+{
+	return a *32;
+}
 
 
 int main(void)
