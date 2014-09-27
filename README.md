@@ -42,6 +42,10 @@ can only modify it via special instructions.
 	MOV %rbx, 0x0100
 	ADD %rcx, %rax, %rbx
 
+For the most part we will ignore the legacy cruft of i386 --
+there are segment registers, descriptor tables, call gates and
+an enormous number of dusty corners that just don't matter anymore.
+
 
 Argument passing
 ---
@@ -108,30 +112,68 @@ Goto
 
 Higher level language programmers use phrases like "goto considered
 harmful", but only because they can't handle the truth.  We live
-in a world that has goto and those gotos are used billions of times
-by CPUs.  Those developers have the luxury of not knowing what we
-assembly programmers know: goto, while grotesque and incomprehensible
-to them, is necessary for computers to function.
+in a world that has goto and those gotos are used trillions of times
+by billions of CPUs every second of everyday.  Those developers
+have the luxury of not knowing what we assembly programmers know:
+goto statements, while grotesque and incomprehensible to them, are
+necessary for computers to function.  They can't handle the GOTO!
 
+Branch instructions come in a few varieties:
+
+* absolute, relative or indirect: is the destination address an actual address, relative to the current address or read from a register?
+* unconditional or conditional: should the branch always be taken, or does it depend on a predicate?
+* normal or linked: on x86, `CALL` will push the return address onto the stack.  On ARM, `BL` will move the return address into the link register `%r14`.
 
 
 Arrays
 ---
 
+Arrays are just pointers plus offsets.
 
 Common patterns
 ===
 
+Since most compilers generate fairly straightforward code it is
+possible to recognize common patterns and use them to make sense of the
+code.
+
 printf
 ---
+Debug prints statements are possibly the most useful -- even in a
+totally stripped binary there are occasionally printf calls lefts
+by the programmers.  These calls are the signposts that light our
+way.
 
-Constants
----
-crc32, sha256, etc
-
-Linked lists
----
 
 Function pointers and classes
 ---
+These can be especially hard to debug since they do not have common
+call sites.  With normal functions you can see "what else calls here",
+but with function pointers it can be hard to track them down.
+Hopefully there is a constant pointer table that you can reference, but
+sometimes the pointers are copied into the object (although this
+does open up other exploits later).
+
+
+Constants
+---
+Most hash functions like crc32, sha256, etc all have well-defined
+constants that are giveaways when you find them in the binaries.
+The length can also be useful to figure what sort of checksum is
+in use, since MD5 and SHA1 share some values.
+
+| Length in bits | Likely algorithm | Constants |
+|----------------|------------------|-----------|
+| 8 or 16 | Simple sum, maybe 1's complement | ? |
+| 32      | crc32 | 0x77073096 0xEE0E612C |
+| 64      | MD5 | 0xd76aa478 0xe8c7b756 |
+| 160     | SHA1 | 0x5A827999 0x6ED9EBA1 |
+| 256     | SHA256 | 0x428a2f98 0x71374491 |
+
+
+Linked lists
+---
+Traversing linked lists shows up fairly frequently and is often inlined,
+so it is worth looking at this pattern.
+
 
