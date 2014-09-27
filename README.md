@@ -283,6 +283,34 @@ Any code that works with special registers or instructions will
 probably not decompile well. Atomics, for instance, or Intel
 legacy cruft like `LGDT` will be ignored.
 
+Other tools
+===
+
+`strings` is incredibly useful for initial exploration.  The `-x` option
+will print the hex offset of the strings so that you can find it in
+your disassembler and hopefully find the cross references that use it.
+With the GNU version you can also search for Unicode strings:
+
+	strings -t x -e l file.raw
+
+`xxd` is an all purpose hex dumper.  Again, very useful for initial
+exploration to get a feel for what is in the file.  By default is
+uses 16-bit words, but most often single bytes is better.
+
+	xxd -g 1 file.raw | less
+
+`dd` can be used to transform large files into smaller ones.  Frequently
+ROM dumps will have portions that are copied to different memory locations
+or that you want to analyze individually.  To read the 64K at offset 0x40000
+from `file.raw` into `file.exe` you can use a combination of the block size,
+skip and count options:
+
+	dd if=file.raw bs=1 skip=$[0x40000] count=$[0x1000] of=file.part
+
+`objdump` / `otool` for doing quick disassemblies.
+
+`objcopy` to convert a raw firmware dump into an ELF for easier analysis.
+
 
 Challenge
 ===
