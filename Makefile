@@ -14,7 +14,7 @@ CFLAGS = \
 	-Wall \
 
 example: example.c
-	$(CC) $(CFLAGS) -o $@ example.c /opt/local/lib/libz.a
+	$(CC) $(CFLAGS) -o $@ example.c -L/opt/local/lib/ -lz
 	$(NM) $@ > $@.lst
 	strip $@
 

@@ -91,6 +91,7 @@ on the architecture these might be named ("ax", "bx") or numbered
 | x86-64 | 64-bit | rax, rbx, rcx, rdx, rsi, rdi, r8-r15 | rip, rbp, rsp,... |
 | ARM | 32-bit | r0-r15 | r15 is the pc, r14 is the lr, r13 is the sp |
 
+
 Some registers are special, such as the Program Counter (PC, arm)
 or Instruction Pointer (IP, x86).  This points to the current
 instruction being executed and is incremented after each instruction,
@@ -114,18 +115,18 @@ control is transfered since it is just processing numbers.
 Additionally, compilers are free to do whatever they want inside of
 functions or for ones that aren't visible to others.
 
-| Arg | i386     | x86-64   | x86-64   | ARM      |
-|     | Fastcall | Linux    | Windows  |          |
-|-----|----------|----------|----------|----------|
-| Ret | %eax     | %rax     | %rax     | %r0      |
-| 0   | %ecx     | %rdi     | %rcx     | %r1      |
-| 1   | %edx     | %rsi     | %rdx     | %r2      |
-| 2   | sp[0x00] | %rdx     | %r8      | %r3      |
-| 3   | sp[0x04] | %rcx     | %r9      | sp[0x00] |
-| 4   | sp[0x08] | %r8      | sp[0x00] | sp[0x04] |
-| 5   | sp[0x0C] | %r9      | sp[0x08] | sp[0x08] |
-| 6   | sp[0x10] | sp[0x00] | sp[0x10] | sp[0x0c] |
-| 7   | sp[0x14] | sp[0x08] | sp[0x18] | sp[0x10] |
+
+| Arg | i386 Fastcall | x86-64 Linux | x86-64 Windows | ARM      |
+|-----|---------------|--------------|----------------|----------|
+| Ret | %eax          | %rax         | %rax           | %r0      |
+| 0   | %ecx          | %rdi         | %rcx           | %r1      |
+| 1   | %edx          | %rsi         | %rdx           | %r2      |
+| 2   | sp[0x00]      | %rdx         | %r8            | %r3      |
+| 3   | sp[0x04]      | %rcx         | %r9            | sp[0x00] |
+| 4   | sp[0x08]      | %r8          | sp[0x00]       | sp[0x04] |
+| 5   | sp[0x0C]      | %r9          | sp[0x08]       | sp[0x08] |
+| 6   | sp[0x10]      | sp[0x00]     | sp[0x10]       | sp[0x0c] |
+| 7   | sp[0x14]      | sp[0x08]     | sp[0x18]       | sp[0x10] |
 
 Sometimes the best thing to do is to just write a test program and
 compile it to see what happens.
